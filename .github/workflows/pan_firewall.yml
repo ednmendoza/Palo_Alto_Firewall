@@ -1,0 +1,32 @@
+name: Deploy Palo Alto Firewall
+on: [push]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Ansible and Palo Alto collection
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+          ansible-galaxy collection install paloaltonetworks.panos
+
+      - name: Run Ansible playbook
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
+          AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
+          PALO_ALTO_IP: ${{ secrets.PALO_ALTO_IP }}
+          PALO_ALTO_USERNAME: ${{ secrets.PALO_ALTO_USERNAME }}
+          PALO_ALTO_PASSWORD: ${{ secrets.PALO_ALTO_PASSWORD }}
+        run: |
+          ansible-playbook palo_alto_setup.yml
